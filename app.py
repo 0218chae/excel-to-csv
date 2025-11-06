@@ -6,10 +6,10 @@ from flask import Flask, render_template, request, send_file, abort
 from werkzeug.utils import secure_filename
 import pandas as pd
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=".")
 
-# 업로드 제한: 20MB (원하면 늘려도 됨)
-app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024
+# 업로드 제한: 200KB (로컬 테스트용)
+app.config["MAX_CONTENT_LENGTH"] = 200 * 1024
 ALLOWED_EXTENSIONS = {".xlsx", ".xls"}
 
 # 시트명/파일명 안전화 (한글/영문/숫자/밑줄/하이픈/공백 허용)
@@ -30,7 +30,9 @@ def allowed_file(filename: str) -> bool:
 
 @app.get("/")
 def index():
-    return render_template("index.html")
+    # Vercel 구조에 맞춰 index.html이 리포 루트에 있으므로,
+    # 로컬 서버에서도 동일 파일을 직접 서빙
+    return send_file("index.html")
 
 
 @app.post("/convert")
@@ -51,7 +53,14 @@ def convert():
 
     # 파일을 메모리로 읽어 처리 (디스크에 저장하지 않음)
     file_bytes = io.BytesIO(file.read())
+
+    # 서버 측 크기 제한 (200KB) - Flask MAX_CONTENT_LENGTH와 이중 보호
+    if file_bytes.seek(0, os.SEEK_END) > 200 * 1024:
+        abort(413, "파일이 너무 큽니다. 최대 200KB")
     file_bytes.seek(0)
+
+    if file_bytes.getbuffer().nbytes > 200 * 1024:
+        abort(413, "파일이 너무 큽니다. 최대 200KB")
 
     try:
         xls = pd.ExcelFile(file_bytes)

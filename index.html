@@ -20,9 +20,9 @@
   <div class="box">
     <h1>엑셀 → CSV(시트별) ZIP 변환기</h1>
     <p>엑셀 파일(.xlsx/.xls)을 업로드하면, 각 시트를 CSV로 변환해 ZIP 파일로 내려받습니다.</p>
-    <form id="form" action="/api/convert" method="post" enctype="multipart/form-data">
+    <form id="form" action="/api/index" method="post" enctype="multipart/form-data">
       <input id="file" type="file" name="file" accept=".xlsx,.xls" required />
-      <div class="hint">최대 20MB · 한글 시트명 지원 · CSV는 UTF-8-BOM으로 저장</div>
+      <div class="hint">최대 200KB · 한글 시트명 지원 · CSV는 UTF-8-BOM으로 저장</div>
       <button class="primary" type="submit">변환하기</button>
       <div id="spin" class="spinner">변환 중… 잠시만요 🔄</div>
     </form>
@@ -31,7 +31,17 @@
   <script>
     const form = document.getElementById('form');
     const spin = document.getElementById('spin');
-    form.addEventListener('submit', () => {
+    const fileInput = document.getElementById('file');
+    const MAX_BYTES = 200 * 1024; // 200KB
+    form.addEventListener('submit', (e) => {
+      const f = fileInput.files && fileInput.files[0];
+      if (!f) return; // no file selected (browser will block due to required)
+      if (f.size > MAX_BYTES) {
+        e.preventDefault();
+        alert('파일이 너무 큽니다. 최대 200KB까지 업로드할 수 있어요.');
+        spin.style.display = 'none';
+        return;
+      }
       spin.style.display = 'block';
     });
   </script>
