@@ -16,18 +16,15 @@ def safe_name(name: str) -> str:
 # 파일 크기 제한 (예: 12MB) — 필요하면 조절
 MAX_BYTES = 12 * 1024 * 1024
 
-@app.post("/api/convert")
-def convert():
-    if "file" not in request.files:
-        abort(400, "업로드된 파일이 없습니다.")
-    f = request.files["file"]
-    if not f.filename:
+
+def _convert_impl(file_storage):
+    if not file_storage.filename:
         abort(400, "파일 이름이 비어 있습니다.")
-    ext = os.path.splitext(f.filename)[1].lower()
+    ext = os.path.splitext(file_storage.filename)[1].lower()
     if ext not in [".xlsx", ".xlsm"]:  # openpyxl은 .xlsx/.xlsm 권장
         abort(400, "xlsx/xlsm만 허용합니다. (구형 .xls는 지원하지 않음)")
 
-    raw = f.read()
+    raw = file_storage.read()
     if len(raw) > MAX_BYTES:
         abort(413, f"파일이 너무 큽니다. 최대 {MAX_BYTES // (1024*1024)}MB")
 
@@ -48,11 +45,9 @@ def convert():
         for sheet_name in wb.sheetnames:
             try:
                 ws = wb[sheet_name]
-                # CSV 텍스트를 메모리에 작성
                 out = io.StringIO()
                 writer = csv.writer(out, lineterminator="\n")
                 for row in ws.iter_rows(values_only=True):
-                    # None → "" 로 치환
                     writer.writerow([("" if v is None else v) for v in row])
                 csv_bytes = out.getvalue().encode("utf-8-sig")
             except Exception as e:
@@ -66,10 +61,25 @@ def convert():
             zf.writestr(name, csv_bytes)
 
     zip_buf.seek(0)
-    base = safe_name(os.path.splitext(f.filename)[0]) or "excel"
+    base = safe_name(os.path.splitext(file_storage.filename)[0]) or "excel"
     return send_file(
         zip_buf,
         as_attachment=True,
         download_name=f"{base}_sheets.zip",
         mimetype="application/zip",
     )
+
+
+@app.post("/api/convert")
+def convert_route():
+    if "file" not in request.files:
+        abort(400, "업로드된 파일이 없습니다.")
+    return _convert_impl(request.files["file"])
+
+
+# Vercel에서 파일명이 index.py인 경우 /api/index 로 접근하는 사용자를 위해 추가 라우트 지원
+@app.post("/api/index")
+def index_route():
+    if "file" not in request.files:
+        abort(400, "업로드된 파일이 없습니다.")
+    return _convert_impl(request.files["file"])
