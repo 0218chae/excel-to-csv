@@ -2,5 +2,3 @@ Flask==3.0.3
 pandas==2.3.3
 openpyxl==3.1.5
 numpy==2.3.4
-gunicorn==21.2.0
-# (구형 .xls 필요 시) xlrd==1.2.0

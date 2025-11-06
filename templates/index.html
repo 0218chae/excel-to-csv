@@ -20,7 +20,7 @@
   <div class="box">
     <h1>엑셀 → CSV(시트별) ZIP 변환기</h1>
     <p>엑셀 파일(.xlsx/.xls)을 업로드하면, 각 시트를 CSV로 변환해 ZIP 파일로 내려받습니다.</p>
-    <form id="form" action="/convert" method="post" enctype="multipart/form-data">
+    <form id="form" action="/api/convert" method="post" enctype="multipart/form-data">
       <input id="file" type="file" name="file" accept=".xlsx,.xls" required />
       <div class="hint">최대 20MB · 한글 시트명 지원 · CSV는 UTF-8-BOM으로 저장</div>
       <button class="primary" type="submit">변환하기</button>
