@@ -13,8 +13,8 @@ def safe_name(name: str) -> str:
     name = re.sub(_invalid, "_", name)
     return _space_re.sub(" ", name).strip() or "sheet"
 
-# 파일 크기 제한 (예: 12MB) — 필요하면 조절
-MAX_BYTES = 12 * 1024 * 1024
+# 파일 크기 제한 (200KB)
+MAX_BYTES = 200 * 1024
 
 
 def _convert_impl(file_storage):
@@ -26,7 +26,7 @@ def _convert_impl(file_storage):
 
     raw = file_storage.read()
     if len(raw) > MAX_BYTES:
-        abort(413, f"파일이 너무 큽니다. 최대 {MAX_BYTES // (1024*1024)}MB")
+        abort(413, f"파일이 너무 큽니다. 최대 {MAX_BYTES // 1024}KB")
 
     buf = io.BytesIO(raw)
     buf.seek(0)
