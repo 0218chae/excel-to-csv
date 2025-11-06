@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>엑셀 → CSV(시트별) ZIP 변환기</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", system-ui, sans-serif; margin: 40px; }
+    .box { max-width: 560px; margin: 0 auto; padding: 24px; border: 1px solid #ddd; border-radius: 12px; }
+    h1 { font-size: 20px; margin: 0 0 16px; }
+    p { color: #444; line-height: 1.6; }
+    input[type=file] { width: 100%; padding: 10px; border: 1px dashed #aaa; border-radius: 8px; }
+    button { margin-top: 16px; padding: 10px 16px; border: 0; border-radius: 8px; cursor: pointer; }
+    .primary { background: #111; color: #fff; }
+    .hint { font-size: 13px; color: #666; margin-top: 8px; }
+    .spinner { display:none; margin-top:12px; font-size: 14px; color:#333; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>엑셀 → CSV(시트별) ZIP 변환기</h1>
+    <p>엑셀 파일(.xlsx/.xls)을 업로드하면, 각 시트를 CSV로 변환해 ZIP 파일로 내려받습니다.</p>
+    <form id="form" action="/convert" method="post" enctype="multipart/form-data">
+      <input id="file" type="file" name="file" accept=".xlsx,.xls" required />
+      <div class="hint">최대 20MB · 한글 시트명 지원 · CSV는 UTF-8-BOM으로 저장</div>
+      <button class="primary" type="submit">변환하기</button>
+      <div id="spin" class="spinner">변환 중… 잠시만요 🔄</div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const spin = document.getElementById('spin');
+    form.addEventListener('submit', () => {
+      spin.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
